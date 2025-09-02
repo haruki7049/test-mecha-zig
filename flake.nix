@@ -52,15 +52,9 @@
               # Compiler
               pkgs.zig_0_15
 
-              # C library manager
-              pkgs.pkg-config
-
               # LSP
-              pkgs.nil
               pkgs.zls
-
-              # Music Player
-              pkgs.sox # Use this command as: `play result.wav`
+              pkgs.nil
             ];
 
             buildInputs = [
