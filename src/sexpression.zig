@@ -3,10 +3,6 @@ const std = @import("std");
 
 const testing = std.testing;
 
-fn token(comptime parser: anytype) mecha.Parser(void) {
-    return mecha.combine(.{ parser.discard(), whitespace });
-}
-
 const value = mecha.oneOf(.{
     word,
     sexpr,
@@ -28,6 +24,10 @@ const whitespace = mecha.oneOf(.{
     mecha.ascii.char(0x09), // BS
 }).many(.{ .collect = false }).discard();
 
+fn token(comptime parser: anytype) mecha.Parser(void) {
+    return mecha.combine(.{ parser.discard(), whitespace });
+}
+
 const element = mecha.ref(valueRef);
 const left_parenthesis = token(mecha.ascii.char('('));
 const right_parenthesis = token(mecha.ascii.char(')'));
@@ -42,20 +42,19 @@ const sexpr = mecha.combine(.{
     right_parenthesis,
 });
 
-const expression = mecha.combine(.{ sexpr });
-
-test "expression" {
+test "sexpr" {
     const allocator = testing.allocator;
 
-    const default_value = try expression.parse(allocator, "( hoge )");
+    const default_value = try sexpr.parse(allocator, "( hoge )");
     std.debug.print("{any}\n", .{default_value});
+    try mecha.expectOk(void, 8, {}, default_value);
 
-    const two_token_value = try expression.parse(allocator, "( hoge fuga )");
+    const two_token_value = try sexpr.parse(allocator, "( hoge fuga )");
     std.debug.print("{any}\n", .{two_token_value});
 
-    const recursed_value = try expression.parse(allocator, "( hoge ( fuga ) )");
+    const recursed_value = try sexpr.parse(allocator, "( hoge ( fuga ) )");
     std.debug.print("{any}\n", .{recursed_value});
 
-    const more_recursed_value = try expression.parse(allocator, "( hoge ( ( hoge hoge ) fuga ) )");
+    const more_recursed_value = try sexpr.parse(allocator, "( hoge ( ( hoge hoge ) fuga ) )");
     std.debug.print("{any}\n", .{more_recursed_value});
 }
